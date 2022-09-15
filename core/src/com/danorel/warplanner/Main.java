@@ -1,31 +1,60 @@
 package com.danorel.warplanner;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class Main extends ApplicationAdapter {
 	SpriteBatch batch;
-	Texture img;
+	Sprite player1;
+	Sprite player2;
+	private Music rainMusic;
+	private OrthographicCamera camera;
 	
 	@Override
 	public void create () {
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, 800, 480);
+
 		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+
+		Texture player1Texture = new Texture(Gdx.files.internal("battle-machine-player-1.jpg"));
+		player1 = new Sprite(player1Texture, 0, 0, 50, 50);
+
+		Texture player2Texture = new Texture(Gdx.files.internal("battle-machine-player-2.jpg"));
+		player2 = new Sprite(player2Texture,  0, 0, 50, 50);
+		player2.setX(60);
+
+		rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
+		rainMusic.play();
 	}
 
 	@Override
 	public void render () {
-		ScreenUtils.clear(1, 0, 0, 1);
+		ScreenUtils.clear(0, 0, 0.2f, 1);
+		camera.update();
+		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
-		batch.draw(img, 0, 0);
+		batch.draw(player1, player1.getX(), player1.getY());
+		batch.draw(player2, player2.getX(), player2.getY());
 		batch.end();
+		if(Gdx.input.isTouched()) {
+			Vector3 touchPos = new Vector3();
+			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(touchPos);
+			player1.setX(touchPos.x - player1.getWidth() / 2);
+			player2.setX(800 - touchPos.x - player2.getWidth() / 2);
+		}
 	}
 	
 	@Override
 	public void dispose () {
 		batch.dispose();
-		img.dispose();
 	}
 }
