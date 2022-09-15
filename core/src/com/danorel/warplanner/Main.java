@@ -12,6 +12,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class Main extends ApplicationAdapter {
+	private static final int FRAMES_PER_SECOND = 60;
+
 	private SpriteBatch batch;
 	private Sprite player1;
 	private Sprite player2;
@@ -43,8 +45,10 @@ public class Main extends ApplicationAdapter {
 	public void render () {
 		ScreenUtils.clear(0, 0, 0.2f, 1);
 		camera.update();
+
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
+
 		if (Gdx.input.isTouched()) {
 			touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
 			camera.unproject(touch);
@@ -53,25 +57,39 @@ public class Main extends ApplicationAdapter {
 			player2.setX(800 - touch.x - player2.getWidth() / 2);
 			player2.setY(480 - touch.y - player2.getWidth() / 2);
 		}
+
 		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-			float absoluteDiff = 25 * Gdx.graphics.getDeltaTime();
+			float absoluteDiff = FRAMES_PER_SECOND * Gdx.graphics.getDeltaTime();
 			float numericalDiff = Gdx.input.isKeyPressed(Input.Keys.LEFT) ? -absoluteDiff : absoluteDiff;
 			player1.setX(player1.getX() + numericalDiff);
 			player2.setX(player2.getX() - numericalDiff);
 		}
+
 		if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-			float absoluteDiff = 25 * Gdx.graphics.getDeltaTime();
+			float absoluteDiff = FRAMES_PER_SECOND * Gdx.graphics.getDeltaTime();
 			float numericalDiff = Gdx.input.isKeyPressed(Input.Keys.DOWN) ? -absoluteDiff : absoluteDiff;
 			player1.setY(player1.getY() + numericalDiff);
 			player2.setY(player2.getY() - numericalDiff);
 		}
+
+		if(player1.getX() < 0) player1.setX(0);
+		if(player1.getX() > 800 - player1.getWidth()) player1.setX(800 - player1.getWidth());
+		if(player1.getY() < 0) player1.setY(0);
+		if(player1.getY() > 480 - player1.getHeight()) player1.setY(480 - player1.getHeight());
 		batch.draw(player1, player1.getX(), player1.getY());
+
+		if(player2.getX() < 0) player2.setX(0);
+		if(player2.getX() > 800 - player2.getWidth()) player2.setX(800 - player2.getWidth());
+		if(player2.getY() < 0) player2.setY(0);
+		if(player2.getY() > 480 - player2.getHeight()) player2.setY(480 - player2.getHeight());
 		batch.draw(player2, player2.getX(), player2.getY());
+
 		batch.end();
 	}
 	
 	@Override
 	public void dispose () {
+		rainMusic.dispose();
 		batch.dispose();
 	}
 }
