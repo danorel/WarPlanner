@@ -3,10 +3,15 @@ package com.danorel.warplanner.agents.base;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.utils.Array;
 
 import com.danorel.warplanner.agents.AgentWatcher;
 
+import java.util.Arrays;
+
 public class BaseAgent extends Sprite implements AgentWatcher {
+    public BaseAgent() {}
+
     public BaseAgent(String asset, float initialX, float initialY) {
         this(new Texture(Gdx.files.internal(asset)), initialX, initialY);
     }
@@ -15,6 +20,15 @@ public class BaseAgent extends Sprite implements AgentWatcher {
         super(texture);
         this.setX(initialX);
         this.setY(initialY);
+    }
+
+    public boolean overlapsAny(Array<BaseAgent> others) {
+        for (BaseAgent other : others) {
+            if (this.getBoundingRectangle().overlaps(other.getBoundingRectangle())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean overlaps(BaseAgent other) {

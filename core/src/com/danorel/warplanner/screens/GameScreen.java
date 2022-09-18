@@ -74,7 +74,14 @@ public class GameScreen implements Screen {
         }
         game.batch.end();
 
-        kitty.watch();
+        if (Gdx.input.isTouched()) {
+            Array<BaseAgent> targetAgents = new Array<>();
+            targetAgents.addAll(crystals);
+            kitty = kitty.automatic(targetAgents);
+            System.out.println("kitty: " + kitty.getX() + ", " + kitty.getY());
+        } else {
+            kitty.manual();
+        }
         for (CrystalAgent crystal : crystals) {
             crystal.watch();
         }

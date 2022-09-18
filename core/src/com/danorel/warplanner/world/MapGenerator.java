@@ -1,4 +1,4 @@
 package com.danorel.warplanner.world;
 
-public class WorldGenerator {
+public class MapGenerator {
 }
