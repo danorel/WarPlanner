@@ -2,11 +2,11 @@ package com.danorel.warplanner.world;
 
 import com.badlogic.gdx.math.Vector2;
 
-public class GeneratorUtils {
+public class LocationGenerator {
     private float from;
     private float to;
 
-    public GeneratorUtils(float from, float to) {
+    public LocationGenerator(float from, float to) {
         this.from = from;
         this.to = to;
     }

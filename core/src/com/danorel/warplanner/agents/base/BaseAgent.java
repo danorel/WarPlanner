@@ -1,10 +1,12 @@
-package com.danorel.warplanner.agents;
+package com.danorel.warplanner.agents.base;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
-public class BaseAgent extends Sprite {
+import com.danorel.warplanner.agents.AgentWatcher;
+
+public class BaseAgent extends Sprite implements AgentWatcher {
     public BaseAgent(String asset, float initialX, float initialY) {
         this(new Texture(Gdx.files.internal(asset)), initialX, initialY);
     }
@@ -17,6 +19,25 @@ public class BaseAgent extends Sprite {
 
     public boolean overlaps(BaseAgent other) {
         return this.getBoundingRectangle().overlaps(other.getBoundingRectangle());
+    }
+
+    @Override
+    public void watch() {
+        this.watchMoves();
+        this.watchKeyEvents();
+    }
+
+    @Override
+    public void watchMoves() {
+        if(this.getX() < 0) this.setX(0);
+        if(this.getX() > 800 - this.getWidth()) this.setX(800 - this.getWidth());
+        if(this.getY() < 0) this.setY(0);
+        if(this.getY() > 480 - this.getHeight()) this.setY(480 - this.getHeight());
+    }
+
+    @Override
+    public void watchKeyEvents() {
+
     }
 
     @Override
