@@ -2,22 +2,26 @@ package com.danorel.warplanner.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.ScreenUtils;
-
 import com.danorel.warplanner.Main;
 
-public class MainMenuScreen implements Screen {
+public class OutroScreen implements Screen {
 
     final Main game;
 
+    private Music outro;
     private OrthographicCamera camera;
 
-    public MainMenuScreen(final Main game) {
+    public OutroScreen(final Main game) {
         this.game = game;
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
+
+        outro = Gdx.audio.newMusic(Gdx.files.internal("outro.mp3"));
+        outro.play();
     }
 
     @Override
@@ -33,8 +37,8 @@ public class MainMenuScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
-        game.font.draw(game.batch, "Welcome to WarPlanner!", 100, 150);
-        game.font.draw(game.batch, "Tap anywhere to start research", 100, 100);
+        game.font.draw(game.batch, "Thank you for playing WarPlanner!", 100, 125);
+        game.font.draw(game.batch, "Tap anywhere to re-start game", 100, 100);
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
@@ -65,6 +69,6 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        outro.dispose();
     }
 }

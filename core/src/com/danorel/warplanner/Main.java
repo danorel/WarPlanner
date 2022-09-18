@@ -4,7 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import com.danorel.warplanner.screens.MainMenuScreen;
+import com.danorel.warplanner.screens.IntroScreen;
 
 public class Main extends Game {
 
@@ -15,7 +15,7 @@ public class Main extends Game {
 	public void create () {
 		font = new BitmapFont();
 		batch = new SpriteBatch();
-		this.setScreen(new MainMenuScreen(this));
+		this.setScreen(new IntroScreen(this));
 	}
 
 	@Override

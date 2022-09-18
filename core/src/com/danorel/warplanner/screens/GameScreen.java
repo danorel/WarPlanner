@@ -4,42 +4,66 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.Timer;
 import com.danorel.warplanner.Main;
+import com.danorel.warplanner.agents.BaseAgent;
+import com.danorel.warplanner.agents.PlayerAgent;
+import com.danorel.warplanner.config.Preferences;
+import com.danorel.warplanner.world.AgentGenerator;
+
+import java.util.Iterator;
 
 public class GameScreen implements Screen {
     final Main game;
 
-    private static final int FRAMES_PER_SECOND = 60;
+    private AgentGenerator crystalsGenerator;
+    private AgentGenerator playerGenerator;
 
     private OrthographicCamera camera;
+    private Sound pick;
     private Music rain;
-    private Sprite player1;
-    private Sprite player2;
+    private BaseAgent kitty;
+    private Array<BaseAgent> crystals;
     private Vector3 cursor;
+    private long time;
+
+    private int score = 0;
 
     public GameScreen(final Main game) {
         this.game = game;
 
+        time = TimeUtils.millis();
+
+        crystalsGenerator = new AgentGenerator(50, 750);
+        playerGenerator = new AgentGenerator(240, 360);
+
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 480);
+        camera.setToOrtho(false, Preferences.VIEWPORT_WIDTH, Preferences.VIEWPORT_HEIGHT);
 
         cursor = new Vector3();
 
-        Texture player1Texture = new Texture(Gdx.files.internal("battle-machine-player-1.jpg"));
-        player1 = new Sprite(player1Texture, 0, 0, 50, 50);
+        kitty = playerGenerator.randomOne("curiousKitty_Idle00.png");
+        crystals = crystalsGenerator.randomMany("pink_crystal_0000.png", (byte) 5);
 
-        Texture player2Texture = new Texture(Gdx.files.internal("battle-machine-player-2.jpg"));
-        player2 = new Sprite(player2Texture,  0, 0, 50, 50);
-        player2.setX(60);
+        for (Iterator<BaseAgent> iter = crystals.iterator(); iter.hasNext(); ) {
+            BaseAgent crystal = iter.next();
+            if(crystal.getX() < 0) crystal.setX(0);
+            if(crystal.getX() > 800 - crystal.getWidth()) crystal.setX(800 - crystal.getWidth());
+            if(crystal.getY() < 0) crystal.setY(0);
+            if(crystal.getY() > 480 - crystal.getHeight()) crystal.setY(480 - crystal.getHeight());
+        }
 
         rain = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
         rain.play();
+
+        pick = Gdx.audio.newSound(Gdx.files.internal("pick.mp3"));
     }
 
     @Override
@@ -51,45 +75,53 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0.2f, 1);
 
+        if (crystals.size == 0) {
+            game.setScreen(new OutroScreen(game));
+            dispose();
+        }
+
         game.batch.begin();
-        game.font.draw(game.batch, "Player 1: " + player1.getX() + ", " + player1.getY(), 25, 455);
-        game.font.draw(game.batch, "Player 2: " + player2.getX() + ", " + player2.getY(), 25, 430);
-        game.batch.draw(player1, player1.getX(), player1.getY());
-        game.batch.draw(player2, player2.getX(), player2.getY());
+        game.font.draw(game.batch, "Kitty: " + kitty.getX() + ", " + kitty.getY(), 25, 455);
+        game.font.draw(game.batch, "Score: " + score, 25, 430);
+        game.font.draw(game.batch, "Time played: " + TimeUtils.timeSinceMillis(time) / 1000 + "s", 25, 405);
+        game.batch.draw(kitty, kitty.getX(), kitty.getY());
+        for (BaseAgent crystal: crystals) {
+            game.batch.draw(crystal, crystal.getX(), crystal.getY());
+        }
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
             cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(cursor);
-            player1.setX(cursor.x - player1.getWidth() / 2);
-            player1.setY(cursor.y - player1.getWidth() / 2);
-            player2.setX(800 - cursor.x - player2.getWidth() / 2);
-            player2.setY(480 - cursor.y - player2.getWidth() / 2);
+            kitty.setX(cursor.x - kitty.getWidth() / 2);
+            kitty.setY(cursor.y - kitty.getWidth() / 2);
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            float absoluteDiff = FRAMES_PER_SECOND * Gdx.graphics.getDeltaTime();
+            float absoluteDiff = 2 * Preferences.FRAMES_PER_SECOND * Gdx.graphics.getDeltaTime();
             float numericalDiff = Gdx.input.isKeyPressed(Input.Keys.LEFT) ? -absoluteDiff : absoluteDiff;
-            player1.setX(player1.getX() + numericalDiff);
-            player2.setX(player2.getX() - numericalDiff);
+            kitty.setX(kitty.getX() + numericalDiff);
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            float absoluteDiff = FRAMES_PER_SECOND * Gdx.graphics.getDeltaTime();
+            float absoluteDiff = 2 * Preferences.FRAMES_PER_SECOND * Gdx.graphics.getDeltaTime();
             float numericalDiff = Gdx.input.isKeyPressed(Input.Keys.DOWN) ? -absoluteDiff : absoluteDiff;
-            player1.setY(player1.getY() + numericalDiff);
-            player2.setY(player2.getY() - numericalDiff);
+            kitty.setY(kitty.getY() + numericalDiff);
         }
 
-        if(player1.getX() < 0) player1.setX(0);
-        if(player1.getX() > 800 - player1.getWidth()) player1.setX(800 - player1.getWidth());
-        if(player1.getY() < 0) player1.setY(0);
-        if(player1.getY() > 480 - player1.getHeight()) player1.setY(480 - player1.getHeight());
+        if(kitty.getX() < 0) kitty.setX(0);
+        if(kitty.getX() > 800 - kitty.getWidth()) kitty.setX(800 - kitty.getWidth());
+        if(kitty.getY() < 0) kitty.setY(0);
+        if(kitty.getY() > 480 - kitty.getHeight()) kitty.setY(480 - kitty.getHeight());
 
-        if(player2.getX() < 0) player2.setX(0);
-        if(player2.getX() > 800 - player2.getWidth()) player2.setX(800 - player2.getWidth());
-        if(player2.getY() < 0) player2.setY(0);
-        if(player2.getY() > 480 - player2.getHeight()) player2.setY(480 - player2.getHeight());
+        for (byte i = 0; i < crystals.size; ++i) {
+            BaseAgent crystal = crystals.get(i);
+            if (kitty.overlaps(crystal)) {
+                pick.play();
+                crystals.removeIndex(i);
+                ++score;
+            }
+        }
     }
 
     @Override
@@ -115,5 +147,6 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         rain.dispose();
+        pick.dispose();
     }
 }
